@@ -1,0 +1,9 @@
+bool iswhitespace(char c);
+bool issemi(char c);
+bool isleftpar(char c);
+bool isrightpar(char c);
+bool isquote(char c);
+bool isoperator(char c);
+bool isnewline(char c);
+bool isdoublepoint(char c);
+bool ispoint(char c);
