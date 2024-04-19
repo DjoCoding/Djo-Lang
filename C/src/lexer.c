@@ -4,8 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "type.h"
-#include "string.h"
+#include "./include/type.h"
+#include "./include/string.h"
 
 
 typedef enum {

@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "file.h"
-#include "string.h"
+#include "./include/file.h"
+#include "./include/string.h"
 
 #define NULL_TERMINATOR '\0'
 

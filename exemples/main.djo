@@ -1,0 +1,10 @@
+write("HELLO 'WORLD!\n");
+int number := 10;
+bool my_string := FALSE;
+string my_string := "djaoued";
+
+func print_string(my_string: string): void {
+    print(my_string);
+}
+
+    
