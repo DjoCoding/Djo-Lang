@@ -1,0 +1,6 @@
+rm main
+cd ..
+fpc main.pas
+mv main exec
+rm *.ppu *.o 
+cd exec
