@@ -23,7 +23,11 @@ interface
             LEFT_BRACE,
             LEFT_CURLY_BRACE,
             RIGHT_CURLY_BRACE,
-            BOOLEAN_VALUE
+            BOOLEAN_VALUE,
+            FOR_LOOP,
+            WHILE_LOOP,
+            COMMA,
+            FUNCTION_DECLARATION
         );
 
         token_t = ^my_token;
@@ -33,13 +37,13 @@ interface
             next: token_t;
         end;
 
-        token_list_type = record    
+        token_list_t = record    
             head, tail: token_t;
         end;
 
-    function tokenize(lexer: lexer_t): token_t;
-    procedure get_tokens(filename: string);
-
+    function get_token_list(source_code: string): token_list_t;
+    procedure remove_token_list(var token_list: token_list_t); 
+    procedure write_token_list(token_list: token_list_t);
     
 implementation
 
@@ -56,7 +60,17 @@ function token_create(value: string; _type: TOKEN_TYPE): token_t;
         token := NIL;
     end;
 
-procedure token_add(var token_list: token_list_type; token: token_t);
+function token_list_init(): token_list_t;
+
+    var result: token_list_t;
+
+    begin
+        result.head := NIL;
+        result.tail := NIL; 
+        token_list_init := result;
+    end;
+
+procedure token_add(var token_list: token_list_t; token: token_t);
 
     begin
         if (token_list.head = NIL) then 
@@ -79,10 +93,11 @@ function get_token_type(token_value: string): token_type;
         if (is_number(token_value)) then 
             result := NUMBER_LITERAL
         else
-            if (starts_with(token_value, '"')) then
+            if (starts_with(token_value, '"') or starts_with(token_value, '''')) then
                 result := STRING_LITERAL
             else 
                 case token_value of 
+                    // SEPARATORS
                     '(': result := LEFT_PAREN;
                     ')': result := RIGHT_PAREN;
                     '{': result := LEFT_CURLY_BRACE;
@@ -92,11 +107,23 @@ function get_token_type(token_value: string): token_type;
                     ';': result := SEMI_COLON;
                     ' ': result := WHITE_SPACE;
                     ':=': result := ASSIGNEMENT;
+                    ',': result := COMMA;
+
+                    // DATA TYPES
                     'int': result := INTEGER_TYPE;
                     'string': result := STRING_TYPE;
                     'bool': result := BOOLEAN_TYPE;
+
+                    // SPECIAL VALUES
                     'TRUE', 'FALSE': result := BOOLEAN_VALUE;
                     NEW_LINE_CHAR: result := NEW_LINE; 
+
+                    // LOOP KEYWORDS
+                    'for': result := FOR_LOOP;
+                    'while': result := WHILE_LOOP;
+
+                    // OTHERS
+                    'func': result := FUNCTION_DECLARATION;
                 else 
                     result := IDENTIFIER;
                 end;
@@ -110,13 +137,10 @@ function token_handle_separator(lexer: lexer_t): string;
         quote_type: char; 
 
     begin   
-
-        // writeln(lexer_peek(lexer));
-
         if (is_quote(lexer_peek(lexer))) then 
             begin 
-                quote_type := lexer_peek(lexer);
                 buffer := lexer_consume(lexer);
+                quote_type := buffer[1];
                 while ((not is_eof(lexer)) and (lexer_peek(lexer) <> quote_type)) do 
                     buffer := buffer + lexer_consume(lexer);
                 token_handle_separator := buffer + lexer_consume(lexer);
@@ -142,11 +166,17 @@ function token_handle_separator(lexer: lexer_t): string;
 
 procedure token_write(token: token_t);
 
+    var value: string;
+
     begin
-        writeln('token_value: ', token^.value,  ', token_type: ', token^._type); 
+        if (token^.value[1] = NEW_LINE_CHAR) then 
+            value := '"\n"'
+        else 
+            value := token^.value;
+        writeln('token_value: ', value,  ', token_type: ', token^._type); 
     end;
 
-function tokenize(lexer: lexer_t): token_t;
+function get_next_token(lexer: lexer_t): token_t;
 
     var 
         token: token_t;
@@ -155,6 +185,8 @@ function tokenize(lexer: lexer_t): token_t;
 
     begin
         buffer := '';
+
+        // writeln(lexer_peek(lexer));
 
         if (is_separator(lexer_peek(lexer))) then 
             buffer := token_handle_separator(lexer) 
@@ -165,23 +197,53 @@ function tokenize(lexer: lexer_t): token_t;
 
         _type := get_token_type(buffer);
         token := token_create(buffer, _type);
-        tokenize := token; 
+        get_next_token := token; 
     end;
 
-procedure get_tokens(filename: string);
+function get_token_list(source_code: string): token_list_t;
 
     var lexer: lexer_t;
-        file_content: string;
         token: token_t;
+        token_list: token_list_t;
+        count: integer;
 
     begin
-        file_content := get_file_content(filename);
-        lexer := lexer_create(file_content);
+        lexer := lexer_create(source_code);
+        token_list := token_list_init();
+
         while not is_eof(lexer) do 
             begin 
-                token := tokenize(lexer);
-                token_write(token);
-                dispose(token);
+                token := get_next_token(lexer);
+                token_add(token_list, token);
+            end;
+        
+        get_token_list := token_list;
+    end;
+
+procedure remove_token_list(var token_list: token_list_t); 
+
+    var current_token: token_t;
+    
+    begin
+        while (token_list.head <> NIL) do 
+            begin
+                current_token := token_list.head;
+                token_list.head := current_token^.next;
+                dispose(current_token); 
+            end; 
+        token_list.tail := NIL;
+    end;
+
+procedure write_token_list(token_list: token_list_t);
+
+    var current_token: token_t;
+
+    begin 
+        current_token := token_list.head;
+        while (current_token <> NIL) do 
+            begin
+                token_write(current_token);
+                current_token := current_token^.next; 
             end;
     end;
 

@@ -15,6 +15,7 @@ interface
     function is_newline(c: char): boolean;
     function is_colon(c: char): boolean;
     function is_equal(c: char): boolean;
+    function is_comma(c: char): boolean;
     function is_separator(c: char): boolean;
     
 
@@ -67,7 +68,7 @@ function is_whitespace(c: char): boolean;
 function is_newline(c: char): boolean;
 
     begin
-        is_newline := (c =     NEW_LINE_CHAR); 
+        is_newline := (c = #10); 
     end;
 
 function is_colon(c: char): boolean;
@@ -80,6 +81,12 @@ function is_equal(c: char): boolean;
 
     begin
         is_equal := (c = '='); 
+    end;
+
+function is_comma(c: char): boolean;    
+
+    begin
+        is_comma := (c = ','); 
     end;
 
 function is_left_curly_brace(c: char): boolean;   
@@ -110,7 +117,7 @@ function is_rightbrace(c: char): boolean;
 function is_separator(c: char): boolean;
 
     begin
-        is_separator := is_left_curly_brace(c) or is_right_curly_brace(c) or is_rightbrace(c) or is_leftbrace(c) or is_equal(c) or is_colon(c) or is_newline(c) or is_whitespace(c) or is_semi(c) or is_quote(c) or is_par(c); 
+        is_separator := is_comma(c) or is_left_curly_brace(c) or is_right_curly_brace(c) or is_rightbrace(c) or is_leftbrace(c) or is_equal(c) or is_colon(c) or is_newline(c) or is_whitespace(c) or is_semi(c) or is_quote(c) or is_par(c); 
     end;
 
 function is_number(my_string: string): boolean;

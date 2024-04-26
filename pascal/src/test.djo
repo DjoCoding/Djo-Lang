@@ -1,0 +1,7 @@
+func print_numbers(max_number: int): void {
+    for (i := 1 to max_number) {
+        write(i);
+    }
+}
+
+writeln('the max_number is: ', max_number);

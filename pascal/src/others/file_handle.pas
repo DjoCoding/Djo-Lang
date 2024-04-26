@@ -23,15 +23,15 @@ function get_file_content(filename: string): string;
 
     var filehandle: textfile;
         file_content: string;
-        file_line: string;
+        file_char: char;
     
     begin
         file_open(filehandle, filename, 'r');
         file_content := '';
         while (not eof(filehandle)) do 
             begin
-                readln(filehandle, file_line);
-                file_content := file_content + file_line; 
+                read(filehandle, file_char);
+                file_content := file_content + file_char; 
             end;
         
         get_file_content := file_content;
